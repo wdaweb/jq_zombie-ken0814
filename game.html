@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <title>Document</title>
+  <style>
+    body {
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    #game {
+      width: 800px;
+      height: 800px;
+      background: black;
+      overflow: hidden;
+      position: absolute;
+      cursor: url(./cursor.png) 50 50, auto;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid black;
+      border-radius: 40px;
+      color: white
+    }
+
+    #game img {
+      height: 80px;
+      position: absolute;
+      /* 無法被選取 */
+      user-select: none;
+      /* 無法拖曳 */
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+    }
+
+    #game div {
+      position: absolute;
+      top: 20px;
+      left: 35px;
+      user-select: none;
+    }
+
+
+    #btn-start {
+      width: 200px;
+      height: 60px;
+      border: 3px solid black;
+      line-height: 60px;
+      text-align: center;
+      border-radius: 30px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      background-color: white;
+      z-index: 200;
+      transform: translate(-50%, -50%);
+      user-select: none;
+    }
+
+    #btn-start:hover {
+      cursor: pointer;
+    }
+
+    .dnone {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="btn-start">START</div>
+  <div id="game">
+    <div>
+      <p>SCORES: <span id="text-score">0</span></p>
+      <p>TIME: <span id="text-time">0 </span>s</p>
+    </div>
+
+  </div>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    let score = 0
+    let countdown = 10
+    let timer = 0
+
+    function move (zombie) {
+      const top = Math.round(Math.random() * 70) + '%'
+      const left = Math.round(Math.random() * 70) + '%'
+      zombie.stop().animate({ top, left }, 2000, function () {
+        move(zombie)
+      })
+    }
+
+    $('#btn-start').click(function () {
+      // 停用按鈕
+      $(this).addClass('dnone')
+      // 重設
+      score = 0
+      $('#text-score').text(score)
+      countdown = 20
+      $('#text-time').text(countdown)
+
+      // 開始遊戲
+      timer = setInterval(function () {
+        // 倒數
+        countdown--
+        $('#text-time').text(countdown)
+
+        const random = Math.round(Math.random() * 9)
+        if (random > 2 && $('#game .zombie').length < 20) {
+          const top = Math.round(Math.random() * 70) + '%'
+          const left = Math.round(Math.random() * 70) + '%'
+          const zombie = $(`<img src="./image/菇寶.gif" class="zombie" style="top: ${top}; left: ${left}">`)
+          $('#game').append(zombie)
+          move(zombie)
+        }
+
+        if (countdown <= 0) {
+          clearInterval(timer)
+          // 清空遊戲區域
+          $('#game img').remove()
+          // 重新啟用開始按鈕
+          $('#btn-start').removeClass('dnone')
+          Swal.fire({
+            title: '遊戲結束',
+            text: `時間到，你得到 ${score} 分`,
+            icon: 'info'
+          })
+        }
+      }, 1000)
+    })
+
+    $('#game').on('click', '.zombie', function () {
+      $(this).attr('src', '')
+      $(this).removeClass('zombie').addClass('blood')
+      $(this).stop()
+      score++
+      $('#text-score').text(score)
+    })
+  </script>
+</body>
+
+</html>
